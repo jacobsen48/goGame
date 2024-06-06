@@ -1,2 +1,2 @@
 # goGame
-PMO project of Go Gme 
+PMO project of Go Game 
