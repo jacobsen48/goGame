@@ -1,0 +1,4 @@
+# Ignoring project files of Eclipse
+.classpath
+.project
+.settings/
