@@ -1,0 +1,99 @@
+package org.example.model;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+public class GoModel {
+  private final Board board;
+  private Player currentPlayer;
+  private boolean gameFinished;
+  private Colour[][] previousBoardState;
+
+  public GoModel(int size) {
+    board = new Board(size);
+    currentPlayer = new Player(Colour.BLACK);
+    gameFinished = false;
+    previousBoardState = new Colour[size][size];
+  }
+
+  public Board getBoard() { return board; }
+
+  public Player getCurrentPlayer() { return currentPlayer; }
+
+  public void nextTurn() {
+    currentPlayer = (currentPlayer.getColour() == Colour.BLACK)
+                        ? new Player(Colour.WHITE)
+                        : new Player(Colour.BLACK);
+  }
+
+  public boolean isGameFinished() { return gameFinished; }
+
+  public void finishGame() { gameFinished = true; }
+
+  public void startNewGame() {
+    board.clearBoard();
+    currentPlayer = new Player(Colour.BLACK);
+    gameFinished = false;
+  }
+
+  public boolean isSuicideMove(int x, int y) {
+    Set<String> visited = new HashSet<>();
+    return !hasLiberty(x, y, currentPlayer.getColour(), visited);
+  }
+
+  private boolean hasLiberty(int x, int y, Colour colour, Set<String> visited) {
+    if (x < 0 || y < 0 || x >= board.getSize() || y >= board.getSize())
+      return false;
+    if (visited.contains(x + "," + y))
+      return false;
+
+    visited.add(x + "," + y);
+    if (board.isEmpty(x, y))
+      return true;
+    if (board.getGrid()[x][y] != colour)
+      return false;
+
+    return hasLiberty(x + 1, y, colour, visited) ||
+        hasLiberty(x - 1, y, colour, visited) ||
+        hasLiberty(x, y + 1, colour, visited) ||
+        hasLiberty(x, y - 1, colour, visited);
+  }
+
+  public void savePreviousBoardState() {
+    for (int i = 0; i < board.getSize(); i++) {
+      for (int j = 0; j < board.getSize(); j++) {
+        previousBoardState[i][j] = board.getGrid()[i][j];
+      }
+    }
+  }
+
+  public boolean isKo() {
+    for (int i = 0; i < board.getSize(); i++) {
+      if (!Arrays.equals(previousBoardState[i], board.getGrid()[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public void restorePreviousBoardState() {
+    for (int i = 0; i < board.getSize(); i++) {
+      for (int j = 0; j < board.getSize(); j++) {
+        board.getGrid()[i][j] = previousBoardState[i][j];
+      }
+    }
+  }
+
+  public int calculateScore(Colour colour) {
+    int score = 0;
+    for (int x = 0; x < board.getSize(); x++) {
+      for (int y = 0; y < board.getSize(); y++) {
+        if (board.getGrid()[x][y] == colour) {
+          score++;
+        }
+      }
+    }
+    return score;
+  }
+}
